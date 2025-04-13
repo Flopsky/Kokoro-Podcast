@@ -6,24 +6,25 @@ This project provides web interfaces (Gradio and Next.js) for text-to-speech (TT
 
 1.  **Flask Backend (`openhands/api/tts.py`):**
     *   Loads the Kokoro TTS model (`KPipeline`).
-    *   Provides an API endpoint (`/api/tts-stream`) using Server-Sent Events (SSE) to stream generated audio chunks.
+    *   Provides an API endpoint (`/api/tts-stream`) using Server-Sent Events (SSE) to stream generated audio chunks **(used by the Next.js frontend)**.
     *   Handles text processing and voice selection.
 
 2.  **Gradio Frontend (`app_gradio.py`):**
-    *   A simple, self-contained Gradio interface.
-    *   Connects directly to the Kokoro TTS pipeline within the same script.
-    *   Currently configured for **non-streaming** output (waits for full audio generation).
+    *   **Quick Start Option:** A simple, self-contained Gradio interface that runs the TTS model directly.
+    *   Ideal for quickly testing the core TTS functionality without needing a separate backend process.
+    *   Currently configured for **non-streaming** output (waits for full audio generation before playback).
 
 3.  **Next.js Frontend (`nextjs-frontend/`):**
-    *   A modern web UI built with Next.js, React, TypeScript, and Tailwind CSS.
+    *   A more modern web UI built with Next.js, React, TypeScript, and Tailwind CSS.
     *   Connects to the Flask backend's `/api/tts-stream` endpoint.
     *   Uses the Web Audio API to receive and play **streamed** audio chunks, allowing playback to start before full generation is complete.
     *   Provides replay functionality once the stream is finished.
+    *   Requires running the Flask backend separately.
 
 ## Prerequisites
 
 *   **Python:** Version 3.10+ recommended.
-*   **Node.js & npm:** Required for the Next.js frontend (v18+ recommended).
+*   **Node.js & npm:** Required *only* for the Next.js frontend (v18+ recommended).
 *   **pip:** Python package installer.
 *   **FFmpeg:** Required by Gradio and underlying audio libraries.
 
@@ -44,13 +45,11 @@ This project provides web interfaces (Gradio and Next.js) for text-to-speech (TT
     *(Recommended to use a virtual environment)*
     ```bash
     # python -m venv venv
-    # source venv/bin/activate
-    pip install -r requirements.txt # Or install manually:
-    # pip install Flask Flask-Cors Flask-SSE gradio torch numpy soundfile kokoro==0.9.4 huggingface_hub
+    # source venv/bin/activate 
+    pip install -r requirements.txt
     ```
-    *(Note: A `requirements.txt` doesn't exist yet, manual install is needed for now. Torch installation might need customization based on your system/GPU - see PyTorch website.)*
 
-4.  **Install Next.js Dependencies:**
+4.  **Install Next.js Dependencies (Only if using Next.js frontend):**
     ```bash
     cd nextjs-frontend
     npm install
@@ -59,9 +58,20 @@ This project provides web interfaces (Gradio and Next.js) for text-to-speech (TT
 
 ## Running the Application
 
-You can run either the Gradio UI or the Next.js UI.
+**Option 1: Gradio UI (Quickest Start, Non-Streaming)**
 
-**Option 1: Running the Next.js Frontend (with Streaming)**
+1.  **Run the Gradio script:**
+    *(Ensure you are in the project root directory)*
+    ```bash
+    python app_gradio.py
+    ```
+    *(This runs the Gradio app, likely on port 53940 or the next available. It includes the TTS model directly.)*
+
+2.  **Access:** Open your browser to the URL shown in the terminal.
+
+---
+
+**Option 2: Next.js Frontend (Requires Separate Backend, Streaming Playback)**
 
 1.  **Start the Flask Backend:**
     *(Ensure you are in the project root directory)*
@@ -79,17 +89,6 @@ You can run either the Gradio UI or the Next.js UI.
     *(This runs the frontend on port 53940)*
 
 3.  **Access:** Open your browser to `http://localhost:53940`.
-
-**Option 2: Running the Gradio Frontend (Non-Streaming)**
-
-1.  **Run the Gradio script:**
-    *(Ensure you are in the project root directory)*
-    ```bash
-    python app_gradio.py
-    ```
-    *(This runs the Gradio app, likely on port 53940 or the next available)*
-
-2.  **Access:** Open your browser to the URL shown in the terminal.
 
 **First Run Note:** The first time you run either application, the necessary Kokoro TTS models and voice files will be downloaded from Hugging Face Hub. This might take some time.
 
