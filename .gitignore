@@ -1,0 +1,13 @@
+# Ignore Node modules and sensitive files
+node_modules/
+.env*
+!.env.example
+*.log
+dist/
+build/
+.DS_Store
+/nextjs-frontend/.next/
+/nextjs-frontend/out/
+__pycache__/
+.venv/
+venv/
