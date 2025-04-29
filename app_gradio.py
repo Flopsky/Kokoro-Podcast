@@ -6,6 +6,7 @@ import time
 import io
 import soundfile as sf
 from kokoro.pipeline import KPipeline
+from script_generator.script_generator import generate_script
 
 # --- Logging Setup ---
 logging.basicConfig(level=logging.INFO)
@@ -56,7 +57,8 @@ def generate_speech_streaming(text, voice):
     
     try:
         start_time = time.time()
-        synthesis_generator = tts_instance(text=text, voice=voice)
+        script = generate_script(text)
+        synthesis_generator = tts_instance(text=script, voice=voice)
         
         chunk_index = 0
         all_audio_chunks = [] # Collect all chunks here

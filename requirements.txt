@@ -1,4 +1,5 @@
 Flask
+dotenv
 Flask-Cors
 Flask-SSE
 gradio
@@ -10,3 +11,5 @@ huggingface_hub
 loguru
 misaki
 transformers
+instructor
+google.generativeai==0.8.3
