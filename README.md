@@ -4,7 +4,7 @@ This project provides web interfaces (Gradio and Next.js) for text-to-speech (TT
 
 ## Components
 
-1.  **Flask Backend (`openhands/api/tts.py`):**
+1.  **Flask Backend (`tts_streaming/api/tts.py`):**
     *   Loads the Kokoro TTS model (`KPipeline`).
     *   Provides an API endpoint (`/api/tts-stream`) using Server-Sent Events (SSE) to stream generated audio chunks **(used by the Next.js frontend)**.
     *   Handles text processing and voice selection.
@@ -76,7 +76,7 @@ This project provides web interfaces (Gradio and Next.js) for text-to-speech (TT
 1.  **Start the Flask Backend:**
     *(Ensure you are in the project root directory)*
     ```bash
-    python openhands/api/tts.py
+    python tts_streaming/api/tts.py
     ```
     *(Keep this terminal running. The backend runs on port 57103)*
 
