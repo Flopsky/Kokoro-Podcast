@@ -129,4 +129,4 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue="blue", secondary_hue="sky"), cs
 
 # --- Launch the App ---
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=53940, share=False)
+    demo.launch(server_name="0.0.0.0", server_port=53940, share=True)

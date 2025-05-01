@@ -37,8 +37,7 @@ class PodcastSegment(BaseModel):
     """
     segment_title: Optional[str] = Field(
         None,
-        description="An optional title for this segment (e.g., 'Introduction', 'Main Point 1').",
-        examples=["Introduction"]
+        description="An optional title for this segment, something meaningfull.",
     )
     paragraphs: List[PodcastParagraph] = Field(
         ...,
