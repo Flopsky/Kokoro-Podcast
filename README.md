@@ -108,9 +108,8 @@ Open-source project that transforms arbitrarily long text into a continuous, str
 **First Run Note:** The first time you run either application, the necessary Kokoro TTS models and voice files will be downloaded from Hugging Face Hub. This might take some time.
 
 ## TODO 
- [] Make a Dockerfile
- 
- [] Host this somewhere for anyone to use for free
+- [] Make a Dockerfile
+- [] Host this somewhere for anyone to use for free
 
 ## Usage (Next.js Frontend)
 
