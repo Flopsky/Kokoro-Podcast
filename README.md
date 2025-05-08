@@ -1,6 +1,21 @@
-# Kokoro-Podcast
 
-This project provides web interfaces (Gradio and Next.js) for text-to-speech (TTS) synthesis using the Kokoro TTS model (`hexgrad/Kokoro-82M`).
+# **Kokoro-Podcast**
+
+Open-source project that transforms arbitrarily long text into a continuous, streaming podcast-like audio experience. Its key innovation lies in its **streaming architecture**: it doesn't wait to process the entire text before playback. Instead, it begins narrating the text as soon as the first portion is ready, while simultaneously generating and queuing the remainder of the content in real time.
+
+### Core Features:
+
+* 🎙️ **Text-to-Speech (TTS)**: Converts text into natural-sounding speech using open or proprietary TTS engines.
+* 📡 **Streaming Playback**: Plays the beginning of the podcast immediately while continuing to process and stream the rest of the text in the background.
+* 🧵 **Chunked Generation**: Breaks down long texts into manageable segments that are queued and played one after another, giving the effect of an uninterrupted podcast.
+* 📜 **Input Flexibility**: Accepts various sources of text input—articles, books, transcriptions, or user input.
+* 🚀 **Efficient Resource Use**: Ideal for long-form listening without overloading memory, since it doesn't process everything upfront.
+
+### Use Cases:
+
+* Listening to articles, blog posts, or long documents on the go.
+* Creating personal podcasts from reading material.
+* Accessibility tool for users who prefer audio content.
 
 ## Components
 
