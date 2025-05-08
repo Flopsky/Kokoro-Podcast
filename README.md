@@ -1,4 +1,4 @@
-# Kokoro TTS Streamer
+# Kokoro-Podcast
 
 This project provides web interfaces (Gradio and Next.js) for text-to-speech (TTS) synthesis using the Kokoro TTS model (`hexgrad/Kokoro-82M`).
 
