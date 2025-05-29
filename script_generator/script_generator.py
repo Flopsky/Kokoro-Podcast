@@ -1,6 +1,6 @@
 import instructor
 from instructor.exceptions import InstructorRetryException
-import google.generativeai as genai
+import openai
 import os
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from typing import Optional
@@ -27,9 +27,9 @@ load_dotenv() # Load environment variables from .env file
 # Ensure GOOGLE_API_KEY is set in your environment or .env file
 if not os.getenv("GEMINI_API_KEY"):
     raise ValueError("GEMINI_API_KEY environment variable not set.")
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-SCRIPTER_MODEL = os.getenv("SCRIPTER_MODEL")
+# Use a Gemini 2.5 model that supports reasoning
+SCRIPTER_MODEL = os.getenv("SCRIPTER_MODEL", "gemini-2.5-flash-preview-05-20")
 
 # Configure Jinja
 prompt_dir = Path(__file__).parent / "prompts"
@@ -39,22 +39,12 @@ env = Environment(
 )
 
 # --- Instructor Client Setup ---
-# Patch the genai client with instructor
-# Use GEMINI_JSON mode as we want direct JSON output based on the system prompt
-# Use gemini-1.5-flash-latest as requested (closest available to 2.0-flash)
-safe = [
-        {"category": "HARM_CATEGORY_DANGEROUS", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"},
-        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-    ]
-client = instructor.from_gemini(
-    client=genai.GenerativeModel(
-        model_name=SCRIPTER_MODEL,
-        safety_settings=safe
-    ),
-    mode=instructor.Mode.GEMINI_JSON, # Force JSON output mode
+# Use OpenAI SDK with instructor, configured for Gemini
+client = instructor.from_openai(
+    openai.OpenAI(
+        api_key=os.getenv("GEMINI_API_KEY"),
+        base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+    )
 )
 
 # --- Core Functions ---
@@ -66,7 +56,8 @@ def call_gemini_with_instructor(
     temperature: float = 1.0,
     top_p: float = 1.0,
     candidate_count: int = 1,
-    max_output_tokens: int = 8000
+    max_output_tokens: int = 8000,
+    reasoning_effort: str = "medium"
 ) -> Poadcast:
     """
     Calls the Gemini model via instructor to get a structured response.
@@ -75,6 +66,7 @@ def call_gemini_with_instructor(
         system_prompt: The system prompt defining the AI's role and task.
         user_prompt: The user prompt containing the specific request (e.g., the source text).
         max_retries: Number of retries if validation fails.
+        reasoning_effort: Reasoning effort level ("low", "medium", "high", or "none")
 
     Returns:
         A Poadcast object validated by Pydantic.
@@ -84,32 +76,36 @@ def call_gemini_with_instructor(
     """
     try:
         logger.info("Calling Gemini API with instructor...")
-        response = client.chat.create_with_completion(
-            messages=[
+        
+        # Prepare the API call parameters
+        api_params = {
+            "model": SCRIPTER_MODEL,
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            generation_config={
-                        "temperature": temperature,
-                        "top_p": top_p,
-                        "candidate_count": candidate_count,
-                        "max_output_tokens": max_output_tokens,
-                    },
-            response_model=Poadcast,
-            max_retries=max_retries,
-        )
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": max_output_tokens,
+            "response_model": Poadcast,
+            "max_retries": max_retries,
+        }
+        
+        # Add reasoning_effort parameter if using a thinking model
+        if "2.5" in SCRIPTER_MODEL and reasoning_effort != "none":
+            api_params["reasoning_effort"] = reasoning_effort
+        
+        response = client.chat.completions.create(**api_params)
         logger.info("Gemini API call successful.")
-        return response[0]
+        return response
     except Exception as e:
         logger.error(f"Error calling Gemini API with instructor after {max_retries} retries: {e}")
         if isinstance(e, InstructorRetryException):
-            logger.info("last_completion: ", e.last_completion)
-            return e.last_completion
-            # Handle retry logic here, potentially with exponential backoff
+            logger.error("last_completion: %s", e.last_completion)
+            if e.last_completion:
+                return e.last_completion
+        raise e
 
-        # You can log the error or perform other error handling steps here.
-        # For example, you might want to log the error to a file or send an alert.
-        # Depending on requirements, you might re-raise, return None, or a default object
 
 
 def generate_script(source_text: str) -> Optional[str]:
@@ -138,7 +134,8 @@ def generate_script(source_text: str) -> Optional[str]:
             temperature=0.0,
             top_p=1.0,
             candidate_count=1,
-            max_output_tokens=8000
+            max_output_tokens=60000,
+            reasoning_effort="high"
         )
 
         # 3. Format the output text
@@ -159,7 +156,7 @@ def generate_script(source_text: str) -> Optional[str]:
         logger.error(f"Failed to generate script: {e}")
         return None
 
-# --- Example Usage ---
+# # --- Example Usage ---
 # if __name__ == "__main__":
 #     example_source_text = """
 #     The history of Python dates back to the late 1980s when Guido van Rossum began working on it.
