@@ -1,4 +1,4 @@
-# Use Python 3.12 slim image as base
+# Dockerfile optimized for Apple Silicon with MLX support
 FROM python:3.12-slim
 
 # Set working directory
@@ -17,13 +17,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install MLX dependencies for Apple Silicon (ARM64)
-RUN if [ "$(uname -m)" = "aarch64" ] || [ "$(uname -m)" = "arm64" ]; then \
-        echo "Installing MLX dependencies for ARM64..."; \
-        pip install --no-cache-dir mlx-audio || echo "MLX installation failed, continuing..."; \
-    else \
-        echo "Skipping MLX installation for non-ARM64 architecture"; \
-    fi
+# Install MLX dependencies for Apple Silicon
+RUN echo "Installing MLX dependencies for Apple Silicon..." && \
+    pip install --no-cache-dir mlx-audio
 
 # Install spaCy English model required by Kokoro
 RUN python -m spacy download en_core_web_sm
